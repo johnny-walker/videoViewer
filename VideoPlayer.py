@@ -8,11 +8,6 @@ import threading
 from ProgramBase import PgmBase
 from ThreadBase import ThreadClass
 
-program = None
-def threadFunc():
-    global program
-    program.loadVideo()
-
 class VideoViewer(PgmBase):
     cvImg = None
     cvImgUpdate = None
@@ -52,7 +47,6 @@ class VideoViewer(PgmBase):
             self.threadEventPlayback.set()
             self.btnPlay['text'] = 'play'
 
-
     def onApply(self):
         self.showMessage("apply effect")
 
@@ -65,7 +59,7 @@ class VideoViewer(PgmBase):
 
     def startVideoThread(self):
         if self.videofile:
-            self.thread = ThreadClass(1, "Video Playback Thread", self, threadFunc)
+            self.thread = ThreadClass(1, "Video Playback Thread", self, self.loadVideo)
             self.threadEventPlayback.clear() 
             self.thread.start()
             self.isPlaying = True
@@ -73,11 +67,11 @@ class VideoViewer(PgmBase):
     
     def loadVideo(self):
         videoObject = cv2.VideoCapture(self.videofile)
-        i=0
         if videoObject.isOpened():
+            index=0
             while not self.threadEventPlayback.wait(timeout = 1/self.fps) :
-                i += 1
-                print("frame_{0:04d}".format(i))
+                index += 1
+                print("frame_{0:04d}".format(index))
                 ret, frame = videoObject.read()
                 if ret:
                     self.updateImage(frame)
@@ -92,9 +86,7 @@ class VideoViewer(PgmBase):
 
 if __name__ == '__main__':
     program = VideoViewer(tk.Tk())
-
     cwd = os.getcwd()
     girl = os.path.join(cwd, "data/girls.mp4")
     program.openVideo(girl)
-
     program.run()
