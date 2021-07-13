@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
+import cv2
 
 class PgmBase(tk.Frame):
     divImg = None
@@ -32,6 +33,8 @@ class PgmBase(tk.Frame):
         self.root.title('Video Viewer')
         self.loadLayout()
         self.bindBtnEvents()
+
+        self.scale = 1.0 
 
     def bindBtnEvents(self):
         self.btnOpen['command'] = lambda : self.onOpen()
@@ -143,10 +146,25 @@ class PgmBase(tk.Frame):
 
         self.showMessage("file {0:s} loaded".format(path))
 
+    def dimResize(self, im):
+        tar_ratio = self.imgHeight / self.imgWidth
+        im_ratio = im.shape[0] / im.shape[1]
+        if tar_ratio > im_ratio:
+            # fix by width
+            resize_width = self.imgWidth
+            resize_height = round(resize_width * im_ratio)
+        else:
+            # fix by height
+            resize_height = self.imgHeight
+            resize_width = round(resize_height / im_ratio)
+        return (resize_width, resize_height)
+
     # img : cv image
     def updateImage(self, img):
+        dim = self.dimResize(img)
+        img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+
         im = Image.fromarray(img)
-        im.thumbnail((self.imgWidth, self.imgHeight))
         tkimage = ImageTk.PhotoImage(im)
 
         if self.lblImg:
