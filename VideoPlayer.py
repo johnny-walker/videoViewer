@@ -1,9 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
-from PIL import Image, ImageTk
 import cv2
-import numpy as np
 import threading
 
 # import own modules
@@ -20,7 +18,7 @@ class VideoViewer(PgmBase):
     cvImgUpdate = None
     videofile = None
     isPlaying = False
-    fps = 1/30
+    fps = 29.97
 
     def __init__(self, root, width=800, height=600):
         super().__init__(root, width, height)
@@ -32,6 +30,7 @@ class VideoViewer(PgmBase):
 
     # overrite button handlers
     def onOpen(self):
+        self.threadEventPlayback.set() 
         self.videofile =  filedialog.askopenfilename(initialdir="./", title="Select Video File")
         self.openVideo(self.videofile)
 
@@ -76,9 +75,9 @@ class VideoViewer(PgmBase):
         videoObject = cv2.VideoCapture(self.videofile)
         i=0
         if videoObject.isOpened():
-            while not self.threadEventPlayback.wait(timeout=self.fps) :
+            while not self.threadEventPlayback.wait(timeout = 1/self.fps) :
                 i += 1
-                print("frame"+str(i))
+                print("frame_{0:04d}".format(i))
                 ret, frame = videoObject.read()
                 if ret:
                     self.updateImage(frame)

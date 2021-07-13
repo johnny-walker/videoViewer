@@ -24,7 +24,7 @@ class PgmBase(tk.Frame):
         y = 150
         root.width = width
         root.height = height
-        geometry = '{0:d}x{1:d}+{2:d}+{3:d}'.format(root.width+5, root.height+5, x, y) 
+        geometry = '{0:d}x{1:d}+{2:d}+{3:d}'.format(root.width, root.height, x, y) 
         root.geometry(geometry)    # ex. root.geometry('600x400+250+150')
         root.title("window")
 
@@ -34,14 +34,17 @@ class PgmBase(tk.Frame):
         self.loadLayout()
         self.bindBtnEvents()
 
-        self.scale = 1.0 
-
     def bindBtnEvents(self):
         self.btnOpen['command'] = lambda : self.onOpen()
         self.btnReset['command'] = lambda : self.onReset()   
         self.btnPlay['command'] = lambda : self.onPlay()
         self.btnApply['command'] = lambda : self.onApply()
+        self.root.bind("<Configure>", self.onResize)
 
+    def onResize(self, event):
+        if event.widget == self.lblImg:
+            self.imgWidth = event.width
+            self.imgHeight = event.height
 
     def run(self):
         self.root.mainloop()
@@ -71,13 +74,10 @@ class PgmBase(tk.Frame):
         msgHeight = 40
 
         self.imgWidth = self.root.width
-        self.imgHeight = self.root.height - btnHeight - msgHeight
-
-        divImg = tk.Frame(self.root,  width=self.imgWidth , height=self.imgHeight , bg='blue')
+        self.imgHeight = self.root.height - btnHeight 
+        divImg = tk.Frame(self.root,  width=self.imgWidth , height=self.imgHeight , bg='white')
         divBtnArea = tk.Frame(self.root,  width=self.imgWidth , height=btnHeight , bg='white')
         divMsg = tk.Frame(self.root,  width=self.imgWidth , height=msgHeight , bg='black')
-
-        self.root.update()
 
         divImg.grid(row=0, column=0, padx=padding, pady=padding, sticky=align_mode)
         divBtnArea.grid(row=1, column=0, padx=padding, pady=padding, sticky=align_mode)
@@ -85,8 +85,10 @@ class PgmBase(tk.Frame):
 
         self.defineLayout(self.root)
         self.defineLayout(divImg)
-        self.defineLayout(divBtnArea)
         self.defineLayout(divMsg)
+
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
 
         # label as container of image
         self.divImg = divImg
@@ -150,17 +152,18 @@ class PgmBase(tk.Frame):
         tar_ratio = self.imgHeight / self.imgWidth
         im_ratio = im.shape[0] / im.shape[1]
         if tar_ratio > im_ratio:
-            # fix by width
-            resize_width = self.imgWidth
-            resize_height = round(resize_width * im_ratio)
+            # scale by width
+            width = self.imgWidth
+            height = round(width * im_ratio)
         else:
-            # fix by height
-            resize_height = self.imgHeight
-            resize_width = round(resize_height / im_ratio)
-        return (resize_width, resize_height)
+            # scale by height
+            height = self.imgHeight
+            width = round(height / im_ratio)
+        return (width, height)
 
     # img : cv image
     def updateImage(self, img):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         dim = self.dimResize(img)
         img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
@@ -168,17 +171,15 @@ class PgmBase(tk.Frame):
         tkimage = ImageTk.PhotoImage(im)
 
         if self.lblImg:
-            self.lblImg.destroy()
-
-        # create label
-        self.lblImg = tk.Label(self.divImg, image=tkimage)
-        self.lblImg.image = tkimage    
-        self.lblImg.grid(row=0, column=0)
-        self.lblImg['width'] = self.imgWidth
-        self.lblImg['height'] = self.imgHeight
-
-        align_mode = 'nswe'
-        self.lblImg.grid(row=0, column=0, sticky=align_mode)
+            self.lblImg.configure(image=tkimage)
+            self.lblImg.image = tkimage
+        else:
+            # create label
+            self.lblImg = tk.Label(self.divImg, image=tkimage)
+            self.lblImg.image = tkimage    
+            self.lblImg['width'] = dim[0]
+            self.lblImg['height'] = dim[1]
+            self.lblImg.grid(row=0, column=0, sticky='nswe')
 
 if __name__ == '__main__':
     program = PgmBase(tk.Tk(), width=800, height=600)
