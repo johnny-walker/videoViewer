@@ -1,4 +1,3 @@
-# https://www.rs-online.com/designspark/python-tkinter-cn#_Toc61529922
 import os
 import tkinter as tk
 from tkinter import filedialog
@@ -11,9 +10,8 @@ class PgmBase(tk.Frame):
 
     btnOpen = None
     btnReset = None
-    btnBlur = None
-    btnSharp = None
-    btnCompare = None
+    btnPlay = None
+    btnApply = None
 
     def __init__(self, root, width=640, height=480):
         super().__init__(root)
@@ -34,6 +32,12 @@ class PgmBase(tk.Frame):
         self.root.title('Video Viewer')
         self.loadLayout()
         self.bindBtnEvents()
+
+    def bindBtnEvents(self):
+        self.btnOpen['command'] = lambda : self.onOpen()
+        self.btnReset['command'] = lambda : self.onReset()   
+        self.btnPlay['command'] = lambda : self.onPlay()
+        self.btnApply['command'] = lambda : self.onApply()
 
 
     def run(self):
@@ -83,12 +87,6 @@ class PgmBase(tk.Frame):
 
         # label as container of image
         self.divImg = divImg
-        '''
-        self.lblImg = tk.Label(divImg)
-        self.lblImg['width'] = self.imgWidth
-        self.lblImg['height'] = self.imgHeight
-        self.lblImg.grid(row=0, column=0, sticky=align_mode)
-        '''
 
         self.btnOpen = tk.Button(divBtnArea, text='open')
         self.btnOpen.pack(side='left')
@@ -110,12 +108,6 @@ class PgmBase(tk.Frame):
     def showMessage(self, msg):
         self.lblMsg['text'] = msg
         
-    def bindBtnEvents(self):
-        self.btnOpen['command'] = lambda : self.onOpen()
-        self.btnReset['command'] = lambda : self.onReset()   
-        self.btnPlay['command'] = lambda : self.onPlay()
-        self.btnApply['command'] = lambda : self.onApply()
-
     def onOpen(self):
         self.videofile =  filedialog.askopenfilename(initialdir="./", title="Select a file")
         if self.videofile:
@@ -151,6 +143,7 @@ class PgmBase(tk.Frame):
 
         self.showMessage("file {0:s} loaded".format(path))
 
+    # img : cv image
     def updateImage(self, img):
         im = Image.fromarray(img)
         im.thumbnail((self.imgWidth, self.imgHeight))

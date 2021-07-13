@@ -1,4 +1,3 @@
-# https://www.rs-online.com/designspark/python-tkinter-cn#_Toc61529922
 import os
 import tkinter as tk
 from tkinter import filedialog
@@ -20,40 +19,16 @@ class VideoViewer(PgmBase):
     def __init__(self, root, width=640, height=480):
         super().__init__(root, width, height)
         self.root.title('Video Player')
-        self.bindButtonEvents()
 
         # initi thread for video playback
         self.thread = None
         self.threadEventPlayback = threading.Event()
 
-    def bindButtonEvents(self):
-        self.btnReset['command'] = lambda : self.onReset()   
-        self.btnPlay['command'] = lambda : self.onPlay()
-        self.btnApply['command'] = lambda : self.onApply()
-        
-    def onOpen(self):
-        self.videofile =  filedialog.askopenfilename(initialdir="./", title="Select Video File")
+    def openVideo(self, path):
+        self.videofile = path
         if self.videofile:
             self.showMessage("open file {0:s}".format(self.videofile))
             self.startVideoThread()
-
-    def onReset(self):
-        self.threadEventPlayback.set()
-        self.showMessage("stop playback")
-        self.isPlaying = False
-
-
-    def onPlay(self):
-        # todo
-        self.isPlaying = not self.isPlaying
-        message = 'start playing video' if self.isPlaying else 'pause video'
-        self.showMessage(message)
-    
-    def onApply(self):
-        kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
-        self.cvImgUpdate = cv2.filter2D(self.cvImgUpdate, -1, kernel)
-        self.updateImage(self.cvImgUpdate)
-        self.showMessage("apply flow detection")
 
     def startVideoThread(self):
         if self.videofile:
@@ -72,12 +47,33 @@ class VideoViewer(PgmBase):
         videoObject.release()
         self.threadEventPlayback.clear()
 
+    # button handlers
+    def onOpen(self):
+        self.videofile =  filedialog.askopenfilename(initialdir="./", title="Select Video File")
+        self.openVideo(self.videofile)
+
+    def onReset(self):
+        self.threadEventPlayback.set()
+        self.showMessage("stop playback")
+        self.isPlaying = False
+
+    def onPlay(self):
+        # todo
+        self.isPlaying = not self.isPlaying
+        message = 'start playing video' if self.isPlaying else 'pause video'
+        self.showMessage(message)
+    
+    def onApply(self):
+        kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+        self.cvImgUpdate = cv2.filter2D(self.cvImgUpdate, -1, kernel)
+        self.updateImage(self.cvImgUpdate)
+        self.showMessage("apply flow detection")
+
 if __name__ == '__main__':
     program = VideoViewer(tk.Tk(), width=800, height=600)
 
-    # load image data 
-    #cwd = os.getcwd()
-    #girl = os.path.join(cwd, "data/girls.mp4")
-    #program.open(girl)
+    cwd = os.getcwd()
+    girl = os.path.join(cwd, "data/girls.mp4")
+    program.openVideo(girl)
 
     program.run()
