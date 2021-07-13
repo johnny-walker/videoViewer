@@ -8,6 +8,7 @@
             "name": "Python: 目前檔案",
             "type": "python",
             "request": "launch",
+            //"program": "ProgramBase.py",
             "program": "VideoPlayer.py",
             "console": "integratedTerminal"
         }

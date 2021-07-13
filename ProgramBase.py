@@ -26,11 +26,10 @@ class PgmBase(tk.Frame):
         root.height = height
         geometry = '{0:d}x{1:d}+{2:d}+{3:d}'.format(root.width, root.height, x, y) 
         root.geometry(geometry)    # ex. root.geometry('600x400+250+150')
-        root.title("window")
+        self.root.title('Image Viewer')
 
         # bind events
         root.bind_all('<Key>', self.onKey)
-        self.root.title('Video Viewer')
         self.loadLayout()
         self.bindBtnEvents()
 
@@ -120,32 +119,20 @@ class PgmBase(tk.Frame):
             self.loadImage(self.videofile)
 
     def onReset(self):
+        # override to implement this
         self.showMessage("reset")
 
     def onPlay(self):
+        # override to implement this
         self.showMessage("play")
 
     def onApply(self):
+        # override to implement this
         self.showMessage("apply")
 
     def loadImage(self, path):
-        im = Image.open(path)
-        im.thumbnail((self.imgWidth, self.imgHeight))
-        tkimage = ImageTk.PhotoImage(im)
-
-        if self.lblImg:
-            self.lblImg.destroy()
-
-        # create label
-        self.lblImg = tk.Label(self.divImg, image=tkimage)
-        self.lblImg.image = tkimage    
-        self.lblImg.grid(row=0, column=0)
-        self.lblImg['width'] = self.imgWidth
-        self.lblImg['height'] = self.imgHeight
-
-        align_mode = 'nswe'
-        self.lblImg.grid(row=0, column=0, sticky=align_mode)
-
+        im = cv2.imread(path)
+        self.updateImage(im)
         self.showMessage("file {0:s} loaded".format(path))
 
     def dimResize(self, im):
